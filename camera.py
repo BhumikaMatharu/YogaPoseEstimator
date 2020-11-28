@@ -50,7 +50,7 @@ poses = ['bridge', 'childs', 'downwarddog', 'mountain', 'plank', 'seatedforwardb
 # Camera App
 print(cv2.__version__)
 cv2.namedWindow("Yoga-Pose-Estimation")
-cam = cv2.VideoCapture(0)
+cam = cv2.VideoCapture(1)
 
 if cam.isOpened():
     rval, frame = cam.read()
@@ -70,6 +70,7 @@ while rval:
     # YOGA POSE ESTIMATION #
 
     # Load image
+    cv2.imwrite('testimg.png', frame)
     image = read_image('testimg.png', format='BGR')
     height, width, _ = image.shape
     transform = detectron2.data.transforms.transform.ResizeTransform(h=height, w=width, new_h=800, new_w=800, interp=2)
@@ -86,7 +87,7 @@ while rval:
             y = y
             out = my_model(x)
             _, predicted = torch.max(out.data, 1)
-            print(poses[predicted])
+            #print(poses[predicted])
             font = cv2.FONT_HERSHEY_SIMPLEX
             cv2.putText(frame, poses[predicted], (10, 450), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
