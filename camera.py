@@ -2,6 +2,7 @@ import cv2
 import pickle
 import torch
 import detectron2
+import os
 from torch.nn import AdaptiveAvgPool2d
 from torch.nn import Linear, Module
 from torch.nn.functional import softmax
@@ -11,6 +12,8 @@ import numpy as np
 from detectron2.data.detection_utils import read_image
 from torch.utils.data import Dataset, DataLoader
 
+
+os.environ["CUDA_VISIBLE_DEVICES"]=""
 # Define yoga model with the backbone from dense pose
 class YogaPoseEstimatorModel(Module):
     def __init__(self, backbone, num_classes, pixel_mean, pixel_std):
@@ -55,8 +58,9 @@ else:
     rval = False
 
 #Load model with pickle
-#my_model = pickle.load(open('densepose_model.sav', 'rb'))
-my_model = torch.load('densepose_model.sav', map_location=torch.device('cpu'))
+my_model = pickle.load(open('densepose_model.sav', 'rb'))
+#my_model = torch.load('densepose_model.sav', map_location=torch.device('cpu'))
+#my_model = joblib.load('densepose_model.sav')
 
 while rval:
     cv2.imshow("Yoga-Pose-Estimation", frame)
@@ -78,8 +82,8 @@ while rval:
     with torch.no_grad():
         for data in test_loader:
             x, y = data
-            x = x.cuda()
-            y = y.cuda()
+            x = x
+            y = y
             out = my_model(x)
             _, predicted = torch.max(out.data, 1)
             print(poses[predicted])
