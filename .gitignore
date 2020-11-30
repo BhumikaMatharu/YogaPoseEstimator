@@ -1,3 +1,5 @@
 densepose_model.sav
 detectron2-windows
 venv
+testimg.png
+poseframe.png

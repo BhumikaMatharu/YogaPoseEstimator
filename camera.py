@@ -47,54 +47,59 @@ torch.device('cpu')
 
 poses = ['bridge', 'childs', 'downwarddog', 'mountain', 'plank', 'seatedforwardbend', 'tree', 'trianglepose', 'warrior1', 'warrior2']
 
-# Camera App
+#Load model with pickle
+my_model = pickle.load(open('densepose_model.sav', 'rb'))
+
+# Start Camera App
 print(cv2.__version__)
 cv2.namedWindow("Yoga-Pose-Estimation")
-cam = cv2.VideoCapture(1)
+cam = cv2.VideoCapture(0)
 
 if cam.isOpened():
     rval, frame = cam.read()
 else:
     rval = False
 
-#Load model with pickle
-my_model = pickle.load(open('densepose_model.sav', 'rb'))
-#my_model = torch.load('densepose_model.sav', map_location=torch.device('cpu'))
-#my_model = joblib.load('densepose_model.sav')
+count = 0 # Count frames
+predictedd = 3
+font = cv2.FONT_HERSHEY_SIMPLEX
 
 while rval:
     cv2.imshow("Yoga-Pose-Estimation", frame)
     rval, frame = cam.read()
-
+    count = count+1
+    print(count)
 
     # YOGA POSE ESTIMATION #
-
-    # Load image
-    cv2.imwrite('testimg.png', frame)
-    image = read_image('testimg.png', format='BGR')
+    # Get frame and load image
+    cv2.imwrite('poseframe.png', frame)
+    image = read_image('poseframe.png', format='BGR')
     height, width, _ = image.shape
     transform = detectron2.data.transforms.transform.ResizeTransform(h=height, w=width, new_h=800, new_w=800, interp=2)
     image = transform.apply_image(image)
     image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
 
-    test_loader = DataLoader([(image, 2)], batch_size=16, shuffle=False, pin_memory=True)
+    test_loader = DataLoader([(image, 0)], batch_size=1, shuffle=False, pin_memory=True)
 
-    # Predict
-    with torch.no_grad():
-        for data in test_loader:
-            x, y = data
-            x = x
-            y = y
-            out = my_model(x)
-            _, predicted = torch.max(out.data, 1)
-            #print(poses[predicted])
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(frame, poses[predicted], (10, 450), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+    if count % 20 == 0:
+        # Predict
+        with torch.no_grad():
+            for data in test_loader:
+                x, y = data
+                x = x
+                y = y
+                out = my_model(x) # Pose prediction
+                _, predicted = torch.max(out.data, 1)
+                predictedd = predicted
+                print(poses[predicted])
+                # Write predicted pose to frame
+                cv2.putText(frame, poses[predicted], (10, 450), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(frame, poses[predictedd], (10, 450), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
 
     key = cv2.waitKey(20)
     if key == 27: # exit on ESC
         break
     if key == 32: # space bar
-        cv2.imwrite('testimg.png', frame)
+        cv2.imwrite('poseframe.png', frame)
 cam.release()
 cv2.destroyWindow("Yoga-Pose-Estimation")
