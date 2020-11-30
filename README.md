@@ -15,6 +15,8 @@ For the camera application, detectron2 is required
 For VIBE yoga pose estimation, download the required packages and run  
 ```python identifyYogaPose.py --vid_file ./path/to/videofile```
 
+To reproduce detectron2 experiments, put jupyter notebooks into detectron2/projects/DensePose/
+
 ## About
 Group B submission for Final project for CS256: Selected Topic in Artificial Intelligence. Led by Instructor: Mashhour Solh, Ph.D. at San Jose State University  
 
